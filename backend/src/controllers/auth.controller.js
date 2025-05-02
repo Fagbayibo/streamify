@@ -45,7 +45,7 @@ try {
     name: createNewUser.fullName,
     Image: createNewUser.profilePic || "",
   });
-  console.log(`Stream user created for ${createNewUser._id}`)
+  console.log(`Stream user created for ${createNewUser.fullName}`)
 } catch (error) {
   
 }
