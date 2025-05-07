@@ -12,4 +12,6 @@ router.post("/logout", logOutUser);
 // Protected Routes
 router.post("/onboarding", protectRoute, onboardUser);
 
+
+
 export default router;
