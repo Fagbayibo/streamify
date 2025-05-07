@@ -39,16 +39,14 @@ export const signUpUser = async (req, res) => {
 
     //TODO: CREATE THE USER IN STREAM
 
-try {
-  await upsertStreamUser({
-    id: createNewUser._id.toString(),
-    name: createNewUser.fullName,
-    Image: createNewUser.profilePic || "",
-  });
-  console.log(`Stream user created for ${createNewUser.fullName}`)
-} catch (error) {
-  
-}
+    try {
+      await upsertStreamUser({
+        id: createNewUser._id.toString(),
+        name: createNewUser.fullName,
+        Image: createNewUser.profilePic || "",
+      });
+      console.log(`Stream user created for ${createNewUser.fullName}`);
+    } catch (error) {}
 
     // Create jwtt token for authentication
     const token = jwt.sign({userId: createNewUser._id}, process.env.JWT_SECRET_KEY, {
@@ -125,5 +123,40 @@ export const logOutUser = (req, res) => {
 };
 
 export const onboardUser = async (req, res) => {
-  
-}
+  console.log(req.user);
+
+  try {
+    const userId = req.user._id;
+
+    const {fullName, bio, nativeLanguage, learningLanguage, location} = req.body;
+
+    if (!fullName || !bio || !nativeLanguage || !learningLanguage || !location) {
+      return res.status(400).json({
+        message: "All fields are required",
+        missingFields: [!fullName && "fullName", !bio && "bio", !nativeLanguage && "nativeLanguage", !learningLanguage && "learningLanguage", !location && "location"],
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...req.body,
+        isOnBoarded: true,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({message: "User not found"});
+    }
+
+    //TODO: update User info in stream
+
+    res.status(200).json({success: true, user: updatedUser});
+  } catch (error) {
+    console.error("Onboarding error", error);
+    res.status(500).json({message: "Internal server error"});
+  }
+};
